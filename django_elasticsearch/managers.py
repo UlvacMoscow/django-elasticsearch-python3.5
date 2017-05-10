@@ -346,8 +346,10 @@ class ElasticsearchManager():
             instance.es.do_index()
 
     def flush(self):
-        es_client.indices.delete_mapping(index=self.index,
-                                         doc_type=self.doc_type,
-                                         ignore=404)
+        self.flush_all()
         self.create_index()
         self.reindex_all()
+
+    def flush_all(self):
+        body = self.all().make_search_body()
+        es_client.delete_by_query(index=self.index, body=body)

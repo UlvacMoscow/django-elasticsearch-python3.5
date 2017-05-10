@@ -173,6 +173,9 @@ class EsQueryset(QuerySet):
                 elif operator == 'contains':
                     filtr = {'query': {'match': {field_name: {'query': value}}}}
 
+                elif operator == 'in':
+                    filtr = {'terms': {field_name: value}}
+
                 elif operator in ['gt', 'gte', 'lt', 'lte']:
                     filtr = {'bool': {'must': [{'range': {field_name: {
                         operator: value}}}]}}
@@ -184,13 +187,13 @@ class EsQueryset(QuerySet):
 
                 elif operator == 'isnull':
                     if value:
-                        filtr = {'missing': {'field': field_name}}
+                        filtr = {'bool': {'must_not': {'exists': {'field': field_name}}}}
                     else:
                         filtr = {'exists': {'field': field_name}}
 
                 nested_update(search['filter'], filtr)
 
-            body['query'] = {'filtered': search}
+            body['query'] = {'bool': search}
         else:
             body = search
 
@@ -318,7 +321,7 @@ class EsQueryset(QuerySet):
         return clone
 
     def sanitize_lookup(self, lookup):
-        valid_operators = ['exact', 'not', 'should', 'range', 'gt', 'lt', 'gte', 'lte', 'contains', 'isnull']
+        valid_operators = ['exact', 'not', 'should', 'range', 'gt', 'lt', 'gte', 'lte', 'contains', 'isnull', 'in']
         words = lookup.split('__')
         fields = [word for word in words if word not in valid_operators]
         # this is also django's default lookup type
@@ -439,3 +442,9 @@ class EsQueryset(QuerySet):
 
     def prefetch_related(self):
         raise NotImplementedError(".prefetch_related is not available for an EsQueryset.")
+
+    def first(self):
+        clone = self._clone()
+        if clone:
+            return clone[0]
+

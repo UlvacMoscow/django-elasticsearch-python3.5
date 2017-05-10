@@ -1,2 +1,2 @@
-# fixes pyelasticsearchversion to 1.*
-elasticsearch>=1.3, <2.0
+# fixes pyelasticsearchversion to 5.*
+elasticsearch>=5.0, <6.0
