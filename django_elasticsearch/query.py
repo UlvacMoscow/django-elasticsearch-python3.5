@@ -122,6 +122,7 @@ class EsQueryset(QuerySet):
     def make_search_body(self):
         body = {}
         search = {}
+        search['query'] = {'bool': {}}
 
         if self.fuzziness is None:  # beware, could be 0
             fuzziness = getattr(settings, 'ELASTICSEARCH_FUZZINESS', 0.5)
@@ -129,7 +130,7 @@ class EsQueryset(QuerySet):
             fuzziness = self.fuzziness
 
         if self._query:
-            search['query'] = {
+            search['query']['bool'] = {'must': {
                 'match': {
                     '_all': {
                         'query': self._query,
@@ -137,10 +138,11 @@ class EsQueryset(QuerySet):
                     }
                 },
             }
+            }
 
         if self.filters:
             # TODO: should we add _cache = true ?!
-            search['filter'] = {}
+            search['query']['bool']['filter'] = {}
             mapping = self.model.es.get_mapping()
 
             for field, value in self.filters.items():
@@ -191,9 +193,9 @@ class EsQueryset(QuerySet):
                     else:
                         filtr = {'exists': {'field': field_name}}
 
-                nested_update(search['filter'], filtr)
+                nested_update(search['query']['bool']['filter'], filtr)
 
-            body['query'] = {'bool': search}
+            body = search
         else:
             body = search
 
