@@ -83,7 +83,11 @@ class EsQueryset(QuerySet):
             self._result_cache = []
 
         if self.is_evaluated:
-            return self._result_cache
+            if type(ndx) is slice:
+                return self._result_cache
+            elif type(ndx) is int:
+                # Note: 0 because we only fetch the right one
+                return self._result_cache[0]
 
         self.ndx = ndx
 
