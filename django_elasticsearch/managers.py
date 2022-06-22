@@ -94,7 +94,7 @@ class ElasticsearchManager():
         else:
             return serializer(self.model, **kwargs)
 
-    @needs_instance
+    #@needs_instance
     def serialize(self):
         """
         Returns a json object suitable for elasticsearch indexation.
@@ -119,7 +119,7 @@ class ElasticsearchManager():
         else:
             return serializer.deserialize(source)
 
-    @needs_instance
+    #@needs_instance
     def do_index(self):
         body = self.serialize()
         es_client.index(index=self.index,
@@ -127,7 +127,7 @@ class ElasticsearchManager():
                         id=self.instance.id,
                         body=body)
 
-    @needs_instance
+    #@needs_instance
     def delete(self):
         es_client.delete(index=self.index,
                          doc_type=self.doc_type,
@@ -147,7 +147,7 @@ class ElasticsearchManager():
 
         return self.queryset.get(id=pk)
 
-    @needs_instance
+    #@needs_instance
     def mlt(self, **kwargs):
         """
         Returns documents that are 'like' this instance
@@ -303,7 +303,7 @@ class ElasticsearchManager():
         """
         return es_client.indices.get_settings(index=self.index)
 
-    @needs_instance
+    #@needs_instance
     def diff(self, source=None):
         """
         Returns a nice diff between the db and es.
