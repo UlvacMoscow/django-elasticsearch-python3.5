@@ -81,7 +81,7 @@ class EsJsonToModelMixin(object):
         Returns a model instance
         """
         attrs = {}
-        for k, v in source.iteritems():
+        for k, v in source.items():
             try:
                 attrs[k] = self.deserialize_field(source, k)
             except (AttributeError, FieldDoesNotExist):

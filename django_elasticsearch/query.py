@@ -53,7 +53,7 @@ class EsQueryset(QuerySet):
         Deep copy of a QuerySet doesn't populate the cache
         """
         obj = self.__class__(self.model)
-        for k, v in self.__dict__.items():
+        for k, v in list(self.__dict__.items()):
             if k not in ['_result_cache', '_facets', '_suggestions', '_total']:
                 obj.__dict__[k] = copy.deepcopy(v, memo)
         return obj
@@ -115,7 +115,7 @@ class EsQueryset(QuerySet):
     def __or__(self, other):
         raise NotImplementedError
 
-    def __nonzero__(self):
+    def __bool__(self):
         self.count()
         return self._total != 0
 
@@ -149,7 +149,7 @@ class EsQueryset(QuerySet):
             search['query']['bool']['filter'] = {}
             mapping = self.model.es.get_mapping()
 
-            for field, value in self.filters.items():
+            for field, value in list(self.filters.items()):
                 try:
                     value = value.lower()
                 except AttributeError:
@@ -341,7 +341,7 @@ class EsQueryset(QuerySet):
 
         filters = {}
         # TODO: not __contains, not __range
-        for lookup, value in kwargs.items():
+        for lookup, value in list(kwargs.items()):
             field, operator = self.sanitize_lookup(lookup)
 
             if operator == 'exact':

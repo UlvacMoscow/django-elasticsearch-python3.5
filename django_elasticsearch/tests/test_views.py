@@ -14,9 +14,9 @@ class EsViewTestCase(TestCase):
     def setUp(self):
         # auto index is disabled for tests so we do it manually
         TestModel.es.create_index(ignore=True)
-        self.instance = TestModel.objects.create(username=u"1",
-                                                 first_name=u"woot",
-                                                 last_name=u"foo")
+        self.instance = TestModel.objects.create(username="1",
+                                                 first_name="woot",
+                                                 last_name="foo")
         self.instance.es.do_index()
         TestModel.es.do_update()
 
@@ -27,8 +27,8 @@ class EsViewTestCase(TestCase):
     def _test_detail_view(self):
         response = self.client.get('/tests/{id}/'.format(id=self.instance.pk))
         content = json.loads(response.content)
-        self.assertEqual(content['fields']['first_name'], u"woot")
-        self.assertEqual(content['fields']['last_name'], u"foo")
+        self.assertEqual(content['fields']['first_name'], "woot")
+        self.assertEqual(content['fields']['last_name'], "foo")
 
     def test_detail_view(self):
         self._test_detail_view()
@@ -45,8 +45,8 @@ class EsViewTestCase(TestCase):
     def _test_list_view(self):
         response = self.client.get('/tests/')
         content = json.loads(response.content)
-        self.assertEqual(content[0]['fields']['first_name'], u"woot")
-        self.assertEqual(content[0]['fields']['last_name'], u"foo")
+        self.assertEqual(content[0]['fields']['first_name'], "woot")
+        self.assertEqual(content[0]['fields']['last_name'], "foo")
 
     def test_list_view(self):
         self._test_list_view()
@@ -57,5 +57,5 @@ class EsViewTestCase(TestCase):
             response = self.client.get('/tests/')
             content = json.loads(response.content)
             self.assertEqual(len(content), 1)
-            self.assertEqual(content[0]['fields']['first_name'], u"woot")
-            self.assertEqual(content[0]['fields']['last_name'], u"foo")
+            self.assertEqual(content[0]['fields']['first_name'], "woot")
+            self.assertEqual(content[0]['fields']['last_name'], "foo")

@@ -12,7 +12,7 @@ from test_app.models import Test2Model
 
 class CustomSerializer(EsJsonSerializer):
     def serialize_char(self, instance, field_name):
-        return u'FOO'
+        return 'FOO'
 
 
 class EsJsonSerializerTestCase(TestCase):
@@ -34,13 +34,13 @@ class EsJsonSerializerTestCase(TestCase):
 
     def test_serialize(self):
         obj = self.instance.es.serialize()
-        self.assertTrue(isinstance(obj, basestring))
+        self.assertTrue(isinstance(obj, str))
 
     @withattrs(Test2Model.Elasticsearch, 'serializer_class',
                'django_elasticsearch.serializers.EsJsonSerializer')
     def test_dynamic_serializer_import(self):
         obj = self.instance.es.serialize()
-        self.assertTrue(isinstance(obj, basestring))
+        self.assertTrue(isinstance(obj, str))
 
     def test_deserialize(self):
         instance = Test2Model.es.deserialize({'char': 'test'})

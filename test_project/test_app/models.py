@@ -11,7 +11,7 @@ class TestSerializer(EsJsonSerializer):
     # Note: i want this field to be null instead of u''
     def serialize_email(self, instance, field_name):
         val = getattr(instance, field_name)
-        if val == u'':
+        if val == '':
             return None
         return val
 

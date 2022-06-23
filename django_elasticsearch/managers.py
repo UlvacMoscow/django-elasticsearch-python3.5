@@ -19,23 +19,23 @@ from django_elasticsearch.client import es_client
 # could store different sizes of numerics ?
 # Note: everything else is mapped to a string
 ELASTICSEARCH_FIELD_MAP = {
-    u'AutoField': 'long',
-    u'BigIntegerField': 'long',
-    u'BinaryField': 'binary',
-    u'BooleanField': 'boolean',
+    'AutoField': 'long',
+    'BigIntegerField': 'long',
+    'BinaryField': 'binary',
+    'BooleanField': 'boolean',
     # both defaults to 'dateOptionalTime'
-    u'DateField': 'date',
-    u'DateTimeField': 'date',
+    'DateField': 'date',
+    'DateTimeField': 'date',
     # u'TimeField': 'string',
-    u'FloatField': 'double',
-    u'IntegerField': 'long',
-    u'PositiveIntegerField': 'long',
-    u'PositiveSmallIntegerField': 'short',
-    u'SmallIntegerField': 'short',
+    'FloatField': 'double',
+    'IntegerField': 'long',
+    'PositiveIntegerField': 'long',
+    'PositiveSmallIntegerField': 'short',
+    'SmallIntegerField': 'short',
 
-    u'ForeignKey': 'object',
-    u'OneToOneField': 'object',
-    u'ManyToManyField': 'object'
+    'ForeignKey': 'object',
+    'OneToOneField': 'object',
+    'ManyToManyField': 'object'
 }
 
 
@@ -87,7 +87,7 @@ class ElasticsearchManager():
 
     def get_serializer(self, **kwargs):
         serializer = self.model.Elasticsearch.serializer_class
-        if isinstance(serializer, basestring):
+        if isinstance(serializer, str):
             module, kls = self.model.Elasticsearch.serializer_class.rsplit(".", 1)
             mod = importlib.import_module(module)
             return getattr(mod, kls)(self.model, **kwargs)

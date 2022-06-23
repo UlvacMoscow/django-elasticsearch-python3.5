@@ -19,26 +19,26 @@ class EsQuerysetTestCase(TestCase):
         # create a bunch of documents
         TestModel.es.flush()
 
-        self.t1 = TestModel.objects.create(username=u"woot woot",
-                                           first_name=u"John",
-                                           last_name=u"Smith",
+        self.t1 = TestModel.objects.create(username="woot woot",
+                                           first_name="John",
+                                           last_name="Smith",
                                            email='johnsmith@host.com')
         self.group = Group.objects.create(name='agroup')
         self.t1.groups.add(self.group)
 
-        self.t2 = TestModel.objects.create(username=u"woot",
-                                           first_name=u"Jack",
-                                           last_name=u"Smith",
+        self.t2 = TestModel.objects.create(username="woot",
+                                           first_name="Jack",
+                                           last_name="Smith",
                                            last_login=datetime.now() + timedelta(seconds=1),
                                            date_joined=datetime.now() + timedelta(seconds=1))
-        self.t3 = TestModel.objects.create(username=u"BigMama",
-                                           first_name=u"Mama",
-                                           last_name=u"Smith",
+        self.t3 = TestModel.objects.create(username="BigMama",
+                                           first_name="Mama",
+                                           last_name="Smith",
                                            last_login=datetime.now() + timedelta(seconds=2),
                                            date_joined=datetime.now() + timedelta(seconds=2))
-        self.t4 = TestModel.objects.create(username=u"foo",
-                                           first_name=u"Foo",
-                                           last_name=u"Bar",
+        self.t4 = TestModel.objects.create(username="foo",
+                                           first_name="Foo",
+                                           last_name="Bar",
                                            last_login=datetime.now() + timedelta(seconds=3),
                                            date_joined=datetime.now() + timedelta(seconds=3))
 
@@ -97,32 +97,32 @@ class EsQuerysetTestCase(TestCase):
 
     def test_facets(self):
         qs = TestModel.es.queryset.facet(['last_name'])
-        expected = [{u'doc_count': 3, u'key': u'smith'},
-                    {u'doc_count': 1, u'key': u'bar'}]
+        expected = [{'doc_count': 3, 'key': 'smith'},
+                    {'doc_count': 1, 'key': 'bar'}]
         self.assertEqual(qs.facets['doc_count'], 4)
         self.assertEqual(qs.facets['last_name']['buckets'], expected)
 
     def test_non_global_facets(self):
         qs = TestModel.es.search("Foo").facet(['last_name'], use_globals=False)
-        expected = [{u'doc_count': 1, u'key': u'bar'}]
+        expected = [{'doc_count': 1, 'key': 'bar'}]
         self.assertEqual(qs.facets['last_name']['buckets'], expected)
 
     def test_suggestions(self):
         qs = TestModel.es.search('smath').suggest(['last_name',], limit=3)
         expected = {
-            u'last_name': [
-                {u'length': 5,
-                 u'offset': 0,
-                 u'options': [{u'freq': 3,
-                               u'score': 0.8,
-                               u'text': u'smith'}],
-                 u'text': u'smath'}]}
+            'last_name': [
+                {'length': 5,
+                 'offset': 0,
+                 'options': [{'freq': 3,
+                               'score': 0.8,
+                               'text': 'smith'}],
+                 'text': 'smath'}]}
         self.assertEqual(expected, qs.suggestions)
 
     def test_count(self):
         self.assertEqual(TestModel.es.count(), 4)
         self.assertEqual(TestModel.es.search("John").count(), 1)
-        self.assertEqual(TestModel.es.search("").filter(last_name=u"Smith").count(), 3)
+        self.assertEqual(TestModel.es.search("").filter(last_name="Smith").count(), 3)
 
     def test_count_after_reeval(self):
         # regression test
@@ -163,14 +163,14 @@ class EsQuerysetTestCase(TestCase):
             TestModel.es.queryset.get()
 
     def test_filtering(self):
-        contents = TestModel.es.filter(last_name=u"Smith").deserialize()
+        contents = TestModel.es.filter(last_name="Smith").deserialize()
         self.assertTrue(self.t1 in contents)
         self.assertTrue(self.t2 in contents)
         self.assertTrue(self.t3 in contents)
         self.assertTrue(self.t4 not in contents)
 
     def test_multiple_filter(self):
-        contents = TestModel.es.filter(last_name=u"Smith", first_name=u"jack").deserialize()
+        contents = TestModel.es.filter(last_name="Smith", first_name="jack").deserialize()
         self.assertTrue(self.t1 not in contents)
         self.assertTrue(self.t2 in contents)
         self.assertTrue(self.t3 not in contents)
@@ -251,13 +251,13 @@ class EsQuerysetTestCase(TestCase):
         self.assertTrue(self.t4 in contents)
 
     def test_excluding(self):
-        contents = TestModel.es.exclude(username=u"woot").deserialize()
+        contents = TestModel.es.exclude(username="woot").deserialize()
         self.assertTrue(self.t1 in contents)
         self.assertTrue(self.t2 not in contents)
         self.assertTrue(self.t3 in contents)
         self.assertTrue(self.t4 in contents)
 
-        qs = TestModel.es.all().exclude(username__not=u"woot")
+        qs = TestModel.es.all().exclude(username__not="woot")
         contents = qs.deserialize()
         self.assertTrue(self.t1 not in contents)
         self.assertTrue(self.t2 in contents)
@@ -293,7 +293,7 @@ class EsQuerysetTestCase(TestCase):
         self.assertTrue(self.t4 in contents)
 
     def test_chain_filter_exclude(self):
-        contents = TestModel.es.filter(last_name=u"Smith").exclude(username=u"woot").deserialize()
+        contents = TestModel.es.filter(last_name="Smith").exclude(username="woot").deserialize()
         self.assertTrue(self.t1 in contents)  # note: it works because username is "not analyzed"
         self.assertTrue(self.t2 not in contents)  # excluded
         self.assertTrue(self.t3 in contents)
@@ -313,7 +313,7 @@ class EsQuerysetTestCase(TestCase):
         self.assertTrue(self.t4 not in contents)
 
     def test_should_lookup(self):
-        contents = TestModel.es.all().filter(last_name__should=u"Smith").deserialize()
+        contents = TestModel.es.all().filter(last_name__should="Smith").deserialize()
         self.assertTrue(self.t1 in contents)
         self.assertTrue(self.t4 not in contents)
 
@@ -327,8 +327,8 @@ class EsQuerysetTestCase(TestCase):
 
     def test_clone_query(self):
         q = TestModel.es.all()
-        q2 = q.filter(username=u"woot")
-        q3 = q.filter(username=u"foo")
+        q2 = q.filter(username="woot")
+        q3 = q.filter(username="foo")
 
         self.assertEqual(q.count(), 4)
         self.assertEqual(q2.count(), 1)
@@ -363,7 +363,7 @@ class EsQuerysetTestCase(TestCase):
     def test_qs_attributes_from_template(self):
         qs = self.t1.es.all().order_by('id')
         t = Template("{% for e in qs %}{{e.username}}. {% endfor %}")
-        expected = u'woot woot. woot. BigMama. foo. '
+        expected = 'woot woot. woot. BigMama. foo. '
         result = t.render(Context({'qs': qs}))
         self.assertEqual(result, expected)
 

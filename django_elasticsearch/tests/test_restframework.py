@@ -111,7 +111,7 @@ class EsRestFrameworkTestCase(TestCase):
         queryset = TestModel.es.all()
         filter_backend = ElasticsearchFilterBackend()
         s = filter_backend.filter_queryset(self.fake_request, queryset, self.fake_view)
-        expected = [{u'doc_count': 1, u'key': u'test'}]
+        expected = [{'doc_count': 1, 'key': 'test'}]
         self.assertEqual(s.facets['doc_count'], 3)
         self.assertEqual(s.facets['first_name']['buckets'], expected)
 
@@ -146,17 +146,17 @@ class EsRestFrameworkTestCase(TestCase):
 
         # make sure we don't break other methods
         r = client.post('/rf/tests/', {
-            'email': u'test@test.com',
-            'username': u'test',
-            'password': u'test'
+            'email': 'test@test.com',
+            'username': 'test',
+            'password': 'test'
         })
 
         self.assertEqual(r.status_code, status.HTTP_201_CREATED)  # created
         pk = r.data['id']
 
         r = client.patch('/rf/tests/{0}/'.format(pk), {
-            'username': u'test2',
-            'password': u'test'
+            'username': 'test2',
+            'password': 'test'
         }, format='json')
         self.assertEqual(r.status_code, 200)
         self.assertEqual(TestModel.objects.get(pk=pk).username, 'test2')

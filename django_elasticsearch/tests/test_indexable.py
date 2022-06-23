@@ -16,9 +16,9 @@ class EsIndexableTestCase(TestCase):
     def setUp(self):
         # auto index is disabled for tests so we do it manually
         TestModel.es.flush()
-        self.instance = TestModel.objects.create(username=u"1",
-                                                 first_name=u"woot",
-                                                 last_name=u"foo")
+        self.instance = TestModel.objects.create(username="1",
+                                                 first_name="woot",
+                                                 last_name="foo")
         self.instance.es.do_index()
         TestModel.es.do_update()
 
@@ -55,7 +55,7 @@ class EsIndexableTestCase(TestCase):
         qs = self.instance.es.mlt(mlt_fields=['first_name',], min_term_freq=1, min_doc_freq=1)
         self.assertEqual(qs.count(), 0)
 
-        a = TestModel.objects.create(username=u"2", first_name=u"woot", last_name=u"foo fooo")
+        a = TestModel.objects.create(username="2", first_name="woot", last_name="foo fooo")
         a.es.do_index()
         a.es.do_update()
 
@@ -73,7 +73,7 @@ class EsIndexableTestCase(TestCase):
     def test_search_with_facets(self):
         s = TestModel.es.search('whatever').facet(['first_name',])
         self.assertEqual(s.count(), 0)
-        expected = [{u'doc_count': 1, u'key': u'woot'}]
+        expected = [{'doc_count': 1, 'key': 'woot'}]
         self.assertEqual(s.facets['doc_count'], 1)
         self.assertEqual(s.facets['first_name']['buckets'], expected)
 
@@ -135,8 +135,8 @@ class EsIndexableTestCase(TestCase):
         TestModel.es.flush()
         TestModel.es.do_update()
 
-        expected = {u'date_joined': {u'format': u'dateOptionalTime', u'type': u'date'},
-                    u'username': {u'index': u'not_analyzed', u'type': u'string'}}
+        expected = {'date_joined': {'format': 'dateOptionalTime', 'type': 'date'},
+                    'username': {'index': 'not_analyzed', 'type': 'string'}}
 
         # Reset the eventual cache on the Model mapping
         mapping = TestModel.es.get_mapping()
@@ -170,9 +170,9 @@ class EsIndexableTestCase(TestCase):
         self.instance.first_name = 'pouet'
 
         expected = {
-            u'first_name': {
-            'es': u'woot',
-            'db': u'pouet'
+            'first_name': {
+            'es': 'woot',
+            'db': 'pouet'
             }
         }
 
@@ -220,19 +220,19 @@ class EsAutoIndexTestCase(TestCase):
                           created_models=[TestModel,],
                           verbosity=2)
 
-        self.instance = TestModel.objects.create(username=u"1",
-                                                 first_name=u"woot",
-                                                 last_name=u"foo")
+        self.instance = TestModel.objects.create(username="1",
+                                                 first_name="woot",
+                                                 last_name="foo")
         self.instance.es.do_index()
 
     def test_auto_save(self):
-        self.instance.first_name = u'Test'
+        self.instance.first_name = 'Test'
         self.instance.save()
         TestModel.es.do_update()
-        self.assertEqual(TestModel.es.filter(first_name=u'Test').count(), 1)
+        self.assertEqual(TestModel.es.filter(first_name='Test').count(), 1)
 
     def test_auto_delete(self):
         self.instance.es.delete()
         TestModel.es.do_update()
-        self.assertEqual(TestModel.es.filter(first_name=u'Test').count(), 0)
-        self.assertEqual(TestModel.es.filter(first_name=u'Test').count(), 0)
+        self.assertEqual(TestModel.es.filter(first_name='Test').count(), 0)
+        self.assertEqual(TestModel.es.filter(first_name='Test').count(), 0)
