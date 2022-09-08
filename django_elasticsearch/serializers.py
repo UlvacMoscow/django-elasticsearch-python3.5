@@ -40,13 +40,13 @@ class EsJsonToModelMixin(object):
     def nested_deserialize(self, field, source):
         # check for Elasticsearch.serializer on the related model
         if source:
-            if hasattr(field.rel.to, 'Elasticsearch'):
-                serializer = field.rel.to.es.get_serializer()
+            if hasattr(field.remote_field.to, 'Elasticsearch'):
+                serializer = field.remote_field.to.es.get_serializer()
                 obj = serializer.deserialize(source)
                 return obj
             elif 'id' in source and 'value' in source:
                 # id/value fallback
-                return field.rel.to.objects.get(pk=source.get('id'))
+                return field.remote_field.to.objects.get(pk=source.get('id'))
 
     def deserialize_field(self, source, field_name):
         method_name = 'deserialize_{0}'.format(field_name)
@@ -66,7 +66,7 @@ class EsJsonToModelMixin(object):
         if val and typ in ('DateField', 'DateTimeField'):
             return datetime.datetime.strptime(val, '%Y-%m-%dT%H:%M:%S.%f')
 
-        if field.rel:
+        if field.remote_field:
             # M2M
             if isinstance(field, ManyToManyField):
                 raise AttributeError
@@ -115,19 +115,19 @@ class EsModelToJsonMixin(object):
             if hasattr(self, field_type_method_name):
                 return getattr(self, field_type_method_name)(instance, field_name)
 
-            if field.rel:
+            if field.remote_field:
                 # M2M
                 if isinstance(field, ManyToManyField):
                     return [self.nested_serialize(r)
                             for r in getattr(instance, field.name).all()]
 
-                rel = getattr(instance, field.name)
+                remote_field = getattr(instance, field.name)
                 # FK, OtO
-                if rel:  # should be a model instance
+                if remote_field:  # should be a model instance
                     if self.cur_depth >= self.max_depth:
                         return
 
-                    return self.nested_serialize(rel)
+                    return self.nested_serialize(remote_field)
 
         try:
             return getattr(instance, field_name)
@@ -136,16 +136,16 @@ class EsModelToJsonMixin(object):
                                  "please provide it a {1} method."
                                  "".format(field_name, method_name))
 
-    def nested_serialize(self, rel):
+    def nested_serialize(self, remote_field):
         # check for Elasticsearch.serializer on the related model
-        if hasattr(rel, 'Elasticsearch'):
-            serializer = rel.es.get_serializer(max_depth=self.max_depth,
+        if hasattr(remote_field, 'Elasticsearch'):
+            serializer = remote_field.es.get_serializer(max_depth=self.max_depth,
                                                cur_depth=self.cur_depth + 1)
-            obj = serializer.format(rel)
+            obj = serializer.format(remote_field)
             return obj
 
         # Fallback on a dict with id + __unicode__ value of the related model instance.
-        return dict(id=rel.pk, value=rel)
+        return dict(id=remote_field.pk, value=remote_field)
 
     def format(self, instance):
         # from a model instance to a dict
